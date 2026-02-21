@@ -39,11 +39,11 @@ function authorization(req, res, next) {
 }
 
 // Optional – for admin-only routes
-function checkAuthorization(request, response, next) {
-    if (request.user && request.user.role === "admin") {
-        return next();
-    }
-    return response.send(errorResponse("Unauthorized Access Admin Only"));
-}
+// function checkAuthorization(request, response, next) {
+//     if (request.user && request.user.role === "admin") {
+//         return next();
+//     }
+//     return response.send(errorResponse("Unauthorized Access Admin Only"));
+// }
 
 module.exports = { authorization, checkAuthorization };
