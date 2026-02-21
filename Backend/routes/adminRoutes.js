@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const db = require("../db-connection/db");
 
 
 
@@ -88,6 +88,7 @@ router.get("/courses", (req, res) => {
     res.json(result);
   });
 });
+
 
 
 router.get("/batches/:course_id", (req, res) => {
