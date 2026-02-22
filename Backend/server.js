@@ -6,8 +6,10 @@ const adminRouter = require('./routes/adminRoutes')
 const userRouter = require('./routes/userRoutes')
 const discountRouter = require('./routes/discounts');
 const paymentsRouter = require('./routes/payments')
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
 app.use(express.json())
 
 app.use('/students', studentRouter)
