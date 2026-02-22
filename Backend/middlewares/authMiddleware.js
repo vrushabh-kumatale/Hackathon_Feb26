@@ -1,49 +1,45 @@
-
 const jwt = require("jsonwebtoken");
-const config = require("../config");
-const { errorResponse } = require("../utils/apiResponse");
 
-function authorization(req, res, next) {
+const config = require("../utils/config");
+const result = require("../utils/result");
 
-    // Routes allowed without token
-    const publicRoutes = [
-        "/user/login",
-        "/user/register",
-        
-    ];
-
-    if (publicRoutes.includes(req.originalUrl)) {
-        return next();
-    }
-
+function authUser(req, res, next) {
+  // for ever incoming request this middleware will be called
+  const allAllowedUrls = ["/user/login", "/user/register"];
+  if (allAllowedUrls.includes(req.url)) next();
+  else {
     const token = req.headers.token;
+    console.log("token", token);
 
-    if (!token) {
-        return res.send(errorResponse("Token is Missing"));
-    }
-
-    try {
+    if (!token) res.send(result.createResult("Token is missing"));
+    else {
+      try {
         const payload = jwt.verify(token, config.secret);
+        console.log("payload: ", payload);
 
-        // Store user info in request
-        req.user = {
-            email: payload.email,
-            role: payload.role
-        };
+        //req.headers.payload = payload
+        req.headers.email = payload.email;
+        req.headers.role = payload.role;
 
         return next();
-        
-    } catch (error) {
-        return res.send(errorResponse("Invalid Token"));
+        //authorization()
+      } catch (ex) {
+        console.log("ex", ex);
+
+        return res.send(result.createResult("Token is Invalid"));
+      }
     }
+  }
 }
 
-// Optional – for admin-only routes
-// function checkAuthorization(request, response, next) {
-//     if (request.user && request.user.role === "admin") {
-//         return next();
-//     }
-//     return response.send(errorResponse("Unauthorized Access Admin Only"));
-// }
+function checkAuthorization(req, res, next) {
+  const role = req.headers.role;
+  console.log("current user role: ", role);
 
-module.exports = { authorization, checkAuthorization };
+  if (role === "admin") {
+    return next();
+  }
+  return res.send(result.createResult("UnAuthorized Access!"));
+}
+
+module.exports = { authUser, checkAuthorization };
