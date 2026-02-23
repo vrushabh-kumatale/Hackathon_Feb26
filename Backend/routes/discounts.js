@@ -4,7 +4,7 @@ const pool = require('../db-connection/db');
 
 
 
-router.post('/', async (req, res) => {
+router.post('/addDiscounts', async (req, res) => {
     try {
         const {
             discount_name,
