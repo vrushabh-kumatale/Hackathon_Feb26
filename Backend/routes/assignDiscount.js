@@ -1,4 +1,7 @@
 // Assign discount to batch
+const express = require('express');
+const router = express.Router();
+const pool = require('../db-connection/db');
 router.post("/assign-discount", async (req, res) => {
   try {
     const { batch_id, discount_id } = req.body;
@@ -34,3 +37,28 @@ router.get("/discounts/by-batch/:batchId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Get all assigned discounts with batch & discount name
+router.get("/assigned-list", async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+        bd.id,
+        b.batch_name,
+        d.name AS discount_name,
+        d.type,
+        d.value,
+        d.is_percentage
+      FROM batch_discounts bd
+      JOIN batches b ON bd.batch_id = b.id
+      JOIN discounts d ON bd.discount_id = d.id
+    `);
+
+    res.json(rows);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
