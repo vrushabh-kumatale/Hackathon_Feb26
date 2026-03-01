@@ -7,6 +7,7 @@ const userRouter = require('./routes/userRoutes')
 const discountRouter = require('./routes/discounts');
 const paymentsRouter = require('./routes/payments')
 const assignDiscount = require('./routes/assignDiscount')
+const registrationList = require('./routes/Registrations')
 const cors = require("cors");
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/user", userRouter);
 app.use('/discounts', discountRouter);
 app.use('/payments', paymentsRouter);
 app.use('/assignDiscount', assignDiscount);
+app.use('/regList', registrationList)
 
 
 app.listen(4000, 'localhost', () => {

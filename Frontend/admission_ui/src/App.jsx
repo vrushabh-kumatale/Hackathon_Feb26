@@ -10,6 +10,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import Login from './pages/Login'
 import StudentDashboard from './pages/StudentDashboard'
 import AssignDiscountToBatch from './pages/AssignDiscountToBatch'
+import RegistrationsList from './pages/RegistrationsList'
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
            <Route path="/userLogin" element={<Login />} />
            <Route path="/studentDashboard" element={<StudentDashboard />} />
            <Route path="/assignDiscount" element={<AssignDiscountToBatch />} />
+           <Route path="/regList" element={<RegistrationsList />} />
 
            
     </Routes>
