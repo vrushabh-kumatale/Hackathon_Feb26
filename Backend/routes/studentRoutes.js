@@ -45,6 +45,7 @@ router.post("/addStudent", async (req, res) => {
 });
 
 
+
 router.get("/", async (req, res) => {
   try {
     const [students] = await pool.query(

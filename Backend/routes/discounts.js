@@ -4,48 +4,123 @@ const pool = require('../db-connection/db');
 
 
 
-router.post('/addDiscounts', async (req, res) => {
-    try {
-        const {
-            discount_name,
-            discount_type_id,
-            value_type,
-            discount_value,
-            start_date,
-            end_date
-        } = req.body;
+// router.post('/addDiscounts', async (req, res) => {
+//     try {
+//         const {
+//             discount_name,
+//             discount_type_id,
+//             value_type,
+//             discount_value,
+//             start_date,
+//             end_date
+//         } = req.body;
 
-        if (!discount_name || !discount_type_id || !value_type || !discount_value) {
-            return res.status(400).json({ message: "Required fields missing" });
-        }
+//         if (!discount_name || !discount_type_id || !value_type || !discount_value) {
+//             return res.status(400).json({ message: "Required fields missing" });
+//         }
 
-        if (!['FLAT', 'PERCENTAGE'].includes(value_type)) {
-            return res.status(400).json({ message: "Invalid value_type" });
-        }
+//         if (!['FLAT', 'PERCENTAGE'].includes(value_type)) {
+//             return res.status(400).json({ message: "Invalid value_type" });
+//         }
 
-        const [result] = await pool.query(
-            `INSERT INTO discounts
-            (discount_name, discount_type_id, value_type, discount_value, start_date, end_date)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [discount_name, discount_type_id, value_type, discount_value, start_date, end_date]
-        );
+//         const [result] = await pool.query(
+//             `INSERT INTO discounts
+//             (discount_name, discount_type_id, value_type, discount_value, start_date, end_date)
+//             VALUES (?, ?, ?, ?, ?, ?)`,
+//             [discount_name, discount_type_id, value_type, discount_value, start_date, end_date]
+//         );
 
-        res.status(201).json({
-            message: "Discount created successfully",
-            id: result.insertId
-        });
+//         res.status(201).json({
+//             message: "Discount created successfully",
+//             id: result.insertId
+//         });
 
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// });
+router.post("/", async (req, res) => {
+  try {
+    const {
+      name,
+      type,
+      value,
+      is_percentage,
+      start_date,
+      end_date,
+      config
+    } = req.body;
+
+    const allowedTypes = [
+      "EARLY_BIRD",
+      "LOYALTY",
+      "INDIVIDUAL",
+      "COMBO",
+      "FLAT",
+      "PERCENTAGE",
+      "GROUP"
+    ];
+
+    if (!name || !type || !value) {
+      return res.status(400).json({
+        message: "Required fields missing"
+      });
     }
+
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json({
+        message: "Invalid discount type",
+        allowed_types: allowedTypes
+      });
+    }
+
+    if (start_date && end_date) {
+      if (new Date(end_date) < new Date(start_date)) {
+        return res.status(400).json({
+          message: "End date must be greater than or equal to start date"
+        });
+      }
+    }
+
+    // ✅ Proper date formatting
+    const formattedStartDate =
+      start_date && start_date.trim() !== "" ? start_date : null;
+
+    const formattedEndDate =
+      end_date && end_date.trim() !== "" ? end_date : null;
+
+    const sql = `
+      INSERT INTO discounts
+      (name, type, value, is_percentage, start_date, end_date, config)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await pool.query(sql, [
+      name,
+      type,
+      value,
+      is_percentage ? 1 : 0,
+      formattedStartDate,
+      formattedEndDate,
+      config ? JSON.stringify(config) : null
+    ]);
+
+    res.json({
+      message: "Discount created successfully",
+      id: result.insertId
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
+  }
 });
-
-
 
 router.get('/', async (req, res) => {
     try {
         const [rows] = await pool.query(
-            "SELECT * FROM discounts ORDER BY id DESC"
+            "SELECT * FROM discounts ORDER BY id"
         );
         res.json(rows);
     } catch (error) {
