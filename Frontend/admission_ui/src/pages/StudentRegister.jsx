@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const RegisterStudent = () => {
+
+  const navigate = useNavigate();
 
   const [studentData, setStudentData] = useState({
     name: "",
@@ -36,12 +39,18 @@ const RegisterStudent = () => {
     e.preventDefault();
 
     try {
-      await axios.post(
+      const res = await axios.post(
         "http://localhost:4000/students/addStudent",
         studentData
       );
 
-      alert("Student Added Successfully");
+      if (res.data.student) {
+        alert("Student already exists!");
+      } else {
+        alert(
+          `Student Added Successfully!\nDefault Password: ${res.data.default_password}`
+        );
+      }
 
       setStudentData({
         name: "",
@@ -49,11 +58,18 @@ const RegisterStudent = () => {
         phone: ""
       });
 
-      fetchStudents(); // refresh list
+      fetchStudents();
 
     } catch (error) {
       alert(error.response?.data?.message || "Error adding student");
     }
+  };
+
+  // ✅ Navigate to Registration Form with student id
+  const handleRegToCourse = (studentId) => {
+    navigate("/regToCourse", {
+      state: { student_id: studentId }
+    });
   };
 
   return (
@@ -62,7 +78,7 @@ const RegisterStudent = () => {
       <h2>Add Student</h2>
 
       {/* Add Form */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="mb-4">
 
         <div className="mb-3">
           <label>Name</label>
@@ -108,13 +124,14 @@ const RegisterStudent = () => {
       {/* Display Students */}
       <h3>All Students</h3>
 
-      <table className="table table-bordered mt-3">
-        <thead>
+      <table className="table table-bordered table-striped mt-3">
+        <thead className="table-dark">
           <tr>
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -124,6 +141,14 @@ const RegisterStudent = () => {
               <td>{student.name}</td>
               <td>{student.email}</td>
               <td>{student.phone}</td>
+              <td>
+                <button
+                  className="btn btn-success btn-sm"
+                  onClick={() => handleRegToCourse(student.id)}
+                >
+                  Reg To Course
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

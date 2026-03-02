@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const RegistrationForm = () => {
+
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     student_id: "",
@@ -16,7 +19,6 @@ const RegistrationForm = () => {
   const [discounts, setDiscounts] = useState([]);
 
   const [calculation, setCalculation] = useState(null);
-  const [result, setResult] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -33,7 +35,7 @@ const RegistrationForm = () => {
       setDiscounts(discountRes.data);
 
     } catch (error) {
-      console.log(error);
+      console.log("Fetch Error:", error);
     }
   };
 
@@ -47,7 +49,7 @@ const RegistrationForm = () => {
 
     setFormData(updatedForm);
 
-    // Live calculation when batch or discount changes
+    // Live fee calculation
     if (
       updatedForm.batch_id &&
       (name === "batch_id" || name === "discount_id")
@@ -66,7 +68,7 @@ const RegistrationForm = () => {
         setCalculation(res.data);
 
       } catch (error) {
-        console.log(error);
+        console.log("Calculation Error:", error);
       }
     }
   };
@@ -83,12 +85,22 @@ const RegistrationForm = () => {
           : null
       };
 
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:4000/register",
         payload
       );
 
-      setResult(res.data);
+      // ✅ Reset Form
+      setFormData({
+        student_id: "",
+        batch_id: "",
+        discount_id: ""
+      });
+
+      setCalculation(null);
+
+      // ✅ Navigate to registration list page
+      navigate("/regList");
 
     } catch (error) {
       alert(error.response?.data?.error || "Registration failed");
@@ -185,22 +197,6 @@ const RegistrationForm = () => {
 
         </div>
       </div>
-
-      {/* After Registration Result */}
-      {result && (
-        <div className="card shadow mt-4">
-          <div className="card-header bg-success text-white">
-            Registration Successful
-          </div>
-          <div className="card-body">
-            <p><strong>Original Fee:</strong> ₹{result.original_fee}</p>
-            <p><strong>Discount:</strong> ₹{result.discount_amount}</p>
-            <h5>
-              <strong>Final Amount Paid: ₹{result.final_amount}</strong>
-            </h5>
-          </div>
-        </div>
-      )}
 
     </div>
   );

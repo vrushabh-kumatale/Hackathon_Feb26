@@ -2,43 +2,6 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db-connection/db');
 
-
-
-// router.post('/addDiscounts', async (req, res) => {
-//     try {
-//         const {
-//             discount_name,
-//             discount_type_id,
-//             value_type,
-//             discount_value,
-//             start_date,
-//             end_date
-//         } = req.body;
-
-//         if (!discount_name || !discount_type_id || !value_type || !discount_value) {
-//             return res.status(400).json({ message: "Required fields missing" });
-//         }
-
-//         if (!['FLAT', 'PERCENTAGE'].includes(value_type)) {
-//             return res.status(400).json({ message: "Invalid value_type" });
-//         }
-
-//         const [result] = await pool.query(
-//             `INSERT INTO discounts
-//             (discount_name, discount_type_id, value_type, discount_value, start_date, end_date)
-//             VALUES (?, ?, ?, ?, ?, ?)`,
-//             [discount_name, discount_type_id, value_type, discount_value, start_date, end_date]
-//         );
-
-//         res.status(201).json({
-//             message: "Discount created successfully",
-//             id: result.insertId
-//         });
-
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// });
 router.post("/", async (req, res) => {
   try {
     const {
@@ -116,6 +79,116 @@ router.post("/", async (req, res) => {
     });
   }
 });
+
+// router.post("/calculate-fee", async (req, res) => {
+//   try {
+//     const { batch_id, discount_id, student_id } = req.body;
+
+//     // 🔹 Validate batch
+//     if (!batch_id) {
+//       return res.status(400).json({ error: "Batch is required" });
+//     }
+
+//     const [batchRows] = await pool.query(
+//       "SELECT fee FROM batches WHERE id = ?",
+//       [batch_id]
+//     );
+
+//     if (batchRows.length === 0) {
+//       return res.status(400).json({ error: "Invalid batch" });
+//     }
+
+//     const originalFee = Number(batchRows[0].fee);
+//     let discountAmount = 0;
+
+//     // 🔹 If discount selected
+//     if (discount_id) {
+
+//       const [discountRows] = await pool.query(
+//         `SELECT * FROM discounts 
+//          WHERE id = ? 
+//          AND is_active = 1
+//          AND (start_date IS NULL OR start_date <= CURDATE())
+//          AND (end_date IS NULL OR end_date >= CURDATE())`,
+//         [discount_id]
+//       );
+
+//       if (discountRows.length > 0) {
+
+//         const discount = discountRows[0];
+
+//         // 🔹 Safe Config Handling
+//         if (discount.config) {
+
+//           let config;
+
+//           try {
+//             config =
+//               typeof discount.config === "string"
+//                 ? JSON.parse(discount.config)
+//                 : discount.config;
+//           } catch (err) {
+//             console.error("Invalid JSON in config:", err);
+//             return res.status(400).json({
+//               error: "Invalid discount configuration"
+//             });
+//           }
+
+//           // 🔹 Student restriction
+//           if (
+//             config?.student_ids &&
+//             config.student_ids.length > 0
+//           ) {
+//             if (!config.student_ids.includes(Number(student_id))) {
+//               return res.status(400).json({
+//                 error: "This discount is not valid for this student"
+//               });
+//             }
+//           }
+
+//           // 🔹 Batch restriction
+//           if (
+//             config?.batch_ids &&
+//             config.batch_ids.length > 0
+//           ) {
+//             if (!config.batch_ids.includes(Number(batch_id))) {
+//               return res.status(400).json({
+//                 error: "This discount is not valid for this course"
+//               });
+//             }
+//           }
+//         }
+
+//         // 🔹 Apply discount
+//         if (Number(discount.is_percentage) === 1) {
+//           discountAmount =
+//             (originalFee * Number(discount.value)) / 100;
+//         } else {
+//           discountAmount = Number(discount.value);
+//         }
+
+//         // 🔹 Prevent negative amount
+//         if (discountAmount > originalFee) {
+//           discountAmount = originalFee;
+//         }
+//       }
+//     }
+
+//     const finalAmount = originalFee - discountAmount;
+
+//     return res.json({
+//       original_fee: originalFee,
+//       discount_amount: discountAmount,
+//       final_amount: finalAmount
+//     });
+
+//   } catch (error) {
+//     console.error("Calculate Fee Error:", error);
+//     return res.status(500).json({
+//       error: "Server error while calculating fee"
+//     });
+//   }
+// });
 
 router.get('/', async (req, res) => {
     try {

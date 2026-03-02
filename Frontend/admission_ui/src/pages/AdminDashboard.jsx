@@ -22,7 +22,7 @@ const AdminDashboard = () => {
         </button>
 
          <button onClick={() => navigate("/assignDiscount")} className="btn">
-          Add Discount
+          Add Discount To Course
         </button>
 
         {/* <button onClick={() => navigate("/admin/capacity")} className="btn">

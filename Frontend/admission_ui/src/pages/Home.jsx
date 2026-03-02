@@ -5,56 +5,65 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={styles.container}>
-      <h1>Welcome to Course Management System</h1>
+    <div className="vh-100 d-flex align-items-center justify-content-center bg-light">
 
-      <div style={styles.buttonContainer}>
-        <button 
-          style={styles.adminBtn}
-          onClick={() => navigate("/admin")}
-        >
-          Admin Login
-        </button>
+      <div className="container text-center">
 
-        <button 
-          style={styles.studentBtn}
-          onClick={() => navigate("/userLogin")}
-        >
-          Student Login
-        </button>
+        <h1 className="fw-bold mb-3">
+          Course Management System
+        </h1>
+
+        <p className="text-muted mb-5">
+          Manage students, courses, batches and registrations easily.
+        </p>
+
+        <div className="row justify-content-center">
+
+          {/* Admin Card */}
+          <div className="col-md-4 mb-4">
+            <div className="card shadow-lg border-0 p-4 h-100">
+              <div className="card-body">
+                <h3 className="card-title mb-3">Admin Panel</h3>
+                <p className="card-text text-muted">
+                  Manage courses, batches, students and discounts.
+                </p>
+                <button
+                  className="btn btn-primary w-100 mt-3"
+                  onClick={() => navigate("/admin")}
+                >
+                  Go to Admin
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Student Card */}
+          <div className="col-md-4 mb-4">
+            <div className="card shadow-lg border-0 p-4 h-100">
+              <div className="card-body">
+                <h3 className="card-title mb-3">Student Panel</h3>
+                <p className="card-text text-muted">
+                  Login to view your courses and registration details.
+                </p>
+                <button
+                  className="btn btn-success w-100 mt-3"
+                  onClick={() => navigate("/studentLogin")}
+                >
+                  Go to Student Login
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <footer className="mt-5 text-muted">
+          © 2026 Course Management System
+        </footer>
+
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    textAlign: "center",
-    marginTop: "100px"
-  },
-  buttonContainer: {
-    marginTop: "40px"
-  },
-  adminBtn: {
-    padding: "15px 30px",
-    margin: "20px",
-    fontSize: "18px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer"
-  },
-  studentBtn: {
-    padding: "15px 30px",
-    margin: "20px",
-    fontSize: "18px",
-    backgroundColor: "#28a745",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer"
-  }
 };
 
 export default Home;

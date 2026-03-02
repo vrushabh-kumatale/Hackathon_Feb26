@@ -23,77 +23,72 @@ const Login = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:4000/user/login",
+        "http://localhost:4000/students/login",
         formData
       );
 
-      if (res.data.status === "success") {
+      const { token, user, message } = res.data;
 
-        const { token, role } = res.data.data;
+      alert(message);
 
-        // Store token
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", role);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role);
 
-        // Role-based redirect
-        if (role === "ADMIN") {
-          navigate("/admin");
-        } else {
-          navigate("/studentDashboard");
-        }
+      if (user.role === "ADMIN") {
+        navigate("/admin");
       } else {
-        alert(res.data.error);
+        navigate("/studentDashboard");
       }
 
     } catch (error) {
-      alert("Login Failed");
+      alert(error.response?.data?.error || "Login Failed");
     }
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "80px" }}>
-      <h2>Login</h2>
+    <div className="container d-flex justify-content-center align-items-center vh-100">
+      <div className="card shadow-lg p-4" style={{ width: "400px" }}>
+        <h3 className="text-center mb-4">Login</h3>
 
-      <form onSubmit={handleSubmit} style={{ width: "300px", margin: "auto" }}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-          onChange={handleChange}
-          style={inputStyle}
-        />
+        <form onSubmit={handleSubmit}>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-          onChange={handleChange}
-          style={inputStyle}
-        />
+          <div className="mb-3">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              className="form-control"
+              placeholder="Enter email"
+              required
+              onChange={handleChange}
+            />
+          </div>
 
-        <button style={buttonStyle}>Login</button>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              className="form-control"
+              placeholder="Enter password"
+              required
+              onChange={handleChange}
+            />
+          </div>
 
-        <p style={{ marginTop: "10px" }}>
-          Don’t have account? <Link to="/register">Register</Link>
-        </p>
-      </form>
+          <button className="btn btn-primary w-100">
+            Login
+          </button>
+
+          <div className="text-center mt-3">
+            Don’t have account?{" "}
+            <Link to="/registerStudent">Register Student</Link>
+          </div>
+
+        </form>
+      </div>
     </div>
   );
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "8px",
-  margin: "10px 0"
-};
-
-const buttonStyle = {
-  padding: "8px 20px",
-  backgroundColor: "#007bff",
-  color: "white",
-  border: "none"
 };
 
 export default Login;

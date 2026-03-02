@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db-connection/db');
+
 router.post("/assign-discount", async (req, res) => {
   try {
     const { batch_id, discount_id } = req.body;

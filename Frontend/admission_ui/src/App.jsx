@@ -25,7 +25,7 @@ function App() {
             <Route path="/registerStudent" element={<RegisterStudent/>}/>
             <Route path="/regToCourse" element={<RegistrationForm/>}/>
            <Route path="/discount" element={<DiscountManager/>}/>
-           <Route path="/userLogin" element={<Login />} />
+           <Route path="/studentLogin" element={<Login />} />
            <Route path="/studentDashboard" element={<StudentDashboard />} />
            <Route path="/assignDiscount" element={<AssignDiscountToBatch />} />
            <Route path="/regList" element={<RegistrationsList />} />
