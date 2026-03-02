@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -17,18 +15,23 @@ const RegistrationForm = () => {
   const [students, setStudents] = useState([]);
   const [batches, setBatches] = useState([]);
   const [discounts, setDiscounts] = useState([]);
-
   const [calculation, setCalculation] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  // ============================
+  // Fetch Initial Data
+  // ============================
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const studentRes = await axios.get("http://localhost:4000/students");
-      const batchRes = await axios.get("http://localhost:4000/admin/batches");
-      const discountRes = await axios.get("http://localhost:4000/discounts");
+      const [studentRes, batchRes, discountRes] = await Promise.all([
+        axios.get("http://localhost:4000/students"),
+        axios.get("http://localhost:4000/admin/batches"),
+        axios.get("http://localhost:4000/discounts")
+      ]);
 
       setStudents(studentRes.data);
       setBatches(batchRes.data);
@@ -39,6 +42,9 @@ const RegistrationForm = () => {
     }
   };
 
+  // ============================
+  // Handle Change + Live Fee
+  // ============================
   const handleChange = async (e) => {
     const { name, value } = e.target;
 
@@ -49,11 +55,14 @@ const RegistrationForm = () => {
 
     setFormData(updatedForm);
 
+    // Reset calculation if batch removed
+    if (!updatedForm.batch_id) {
+      setCalculation(null);
+      return;
+    }
+
     // Live fee calculation
-    if (
-      updatedForm.batch_id &&
-      (name === "batch_id" || name === "discount_id")
-    ) {
+    if (name === "batch_id" || name === "discount_id") {
       try {
         const res = await axios.post(
           "http://localhost:4000/register/calculate-fee",
@@ -69,14 +78,20 @@ const RegistrationForm = () => {
 
       } catch (error) {
         console.log("Calculation Error:", error);
+        setCalculation(null);
       }
     }
   };
 
+  // ============================
+  // Submit Registration
+  // ============================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      setLoading(true);
+
       const payload = {
         student_id: Number(formData.student_id),
         batch_id: Number(formData.batch_id),
@@ -90,7 +105,9 @@ const RegistrationForm = () => {
         payload
       );
 
-      // ✅ Reset Form
+      alert("Registration Successful ✅");
+
+      // Reset form
       setFormData({
         student_id: "",
         batch_id: "",
@@ -99,11 +116,12 @@ const RegistrationForm = () => {
 
       setCalculation(null);
 
-      // ✅ Navigate to registration list page
       navigate("/regList");
 
     } catch (error) {
       alert(error.response?.data?.error || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,15 +200,16 @@ const RegistrationForm = () => {
                 <p><strong>Discount:</strong> ₹{calculation.discount_amount}</p>
                 <hr />
                 <h5>
-                  <strong>
-                    Remaining Payable Amount: ₹{calculation.final_amount}
-                  </strong>
+                  Remaining Payable Amount: ₹{calculation.final_amount}
                 </h5>
               </div>
             )}
 
-            <button className="btn btn-success w-100 mt-3">
-              Register Student
+            <button 
+              className="btn btn-success w-100 mt-3"
+              disabled={loading}
+            >
+              {loading ? "Registering..." : "Register Student"}
             </button>
 
           </form>
