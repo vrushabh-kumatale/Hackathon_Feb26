@@ -21,9 +21,6 @@ const AdminDashboard = () => {
           Add Discount
         </button>
 
-         <button onClick={() => navigate("/assignDiscount")} className="btn">
-          Add Discount To Course
-        </button>
 
         {/* <button onClick={() => navigate("/admin/capacity")} className="btn">
           Define Batch Capacity
