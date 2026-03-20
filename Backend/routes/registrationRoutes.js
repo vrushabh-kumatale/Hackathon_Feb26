@@ -246,4 +246,28 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/student-discount", async (req, res) => {
+  try {
+    const { batch_id } = req.query;
+
+    if (!batch_id) {
+      return res.json([]);
+    }
+
+    const [rows] = await pool.query(
+      `SELECT d.*
+       FROM batch_discounts bd
+       JOIN discounts d ON bd.discount_id = d.id
+       WHERE bd.batch_id = ?`,
+      [batch_id]   // ✔ Only ONE value
+    );
+
+    res.json(rows);
+
+  } catch (error) {
+    console.error("Discount Fetch Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

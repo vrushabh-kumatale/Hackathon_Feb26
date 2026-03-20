@@ -48,6 +48,7 @@ router.post('/register', async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
+
     const { email, password } = req.body;
 
     const hashedPassword = cryptoJs.SHA256(password).toString();
@@ -57,31 +58,35 @@ router.post("/login", async (req, res) => {
     const [data] = await pool.query(sql, [email, hashedPassword]);
 
     if (data.length === 0) {
-      return res.send(result.createResult("Invalid email or password"));
+      return res.status(400).json({
+        message: "Invalid email or password"
+      });
     }
 
     const user = data[0];
 
-    console.log("user:", user);
-
     const payload = {
       email: user.email,
-      role: user.role,
+      role: user.role
     };
 
     const token = jwt.sign(payload, config.secret, { expiresIn: "1h" });
 
-    const userData = {
-      email: user.email,
-      role: user.role,
+    res.json({
+      message: "Login Successful",
       token,
-    };
-
-    res.send(result.createResult(null, userData));
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
 
   } catch (error) {
     console.error("LOGIN ERROR:", error);
-    res.status(500).send(result.createResult(error.message));
+    res.status(500).json({
+      message: error.message
+    });
   }
 });
 module.exports = router;

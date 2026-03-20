@@ -191,16 +191,43 @@ router.post("/", async (req, res) => {
 // });
 
 router.get('/', async (req, res) => {
-    try {
-        const [rows] = await pool.query(
-            "SELECT * FROM discounts ORDER BY id"
-        );
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+  try {
+    const { student_id, batch_id } = req.query;
 
+    
+    if (!student_id || !batch_id) {
+      const [allDiscounts] = await pool.query(
+        "SELECT * FROM discounts WHERE is_active = 1 ORDER BY id"
+      );
+      return res.json(allDiscounts);
+    }
+
+    const [rows] = await pool.query(`
+      SELECT DISTINCT d.*
+      FROM discounts d
+      LEFT JOIN discount_students ds 
+        ON d.id = ds.discount_id
+      LEFT JOIN discount_batches dbt 
+        ON d.id = dbt.discount_id
+      WHERE d.is_active = 1
+      AND (
+        ds.student_id = ?
+        OR dbt.batch_id = ?
+        OR (
+          NOT EXISTS (SELECT 1 FROM discount_students WHERE discount_id = d.id)
+          AND NOT EXISTS (SELECT 1 FROM discount_batches WHERE discount_id = d.id)
+        )
+      )
+      ORDER BY d.id
+    `, [student_id, batch_id]);
+
+    res.json(rows);
+
+  } catch (error) {
+    console.error("Discount Filter Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 router.get('/:id', async (req, res) => {
