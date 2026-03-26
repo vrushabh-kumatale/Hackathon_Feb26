@@ -47,7 +47,7 @@ const AddBatch = () => {
       alert("Batch Created Successfully");
 
       // redirect to display page
-      navigate("/batches");
+      navigate("/");
 
     } catch (err) {
       alert(err.response?.data?.message || "Error creating batch");
