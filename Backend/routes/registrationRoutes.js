@@ -98,6 +98,10 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db-connection/db");
 
+function generateRegistrationCode() {
+  return "REG-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+}
+
 
 // ===============================
 // 1️⃣ CALCULATE FEE ROUTE
@@ -167,39 +171,66 @@ router.post("/calculate-fee", async (req, res) => {
 // 2️⃣ REGISTER STUDENT ROUTE
 // URL: POST /register
 // ===============================
+
 router.post("/", async (req, res) => {
   try {
     const { student_id, batch_id, discount_id } = req.body;
 
     if (!student_id || !batch_id) {
-      return res.status(400).json({ error: "Student & Batch required" });
+      return res.status(400).json({
+        error: "Student and Batch are required"
+      });
     }
 
-    // Get batch fee
+    // ==========================
+    // 1️⃣ Check duplicate registration
+    // ==========================
+    const [existing] = await pool.query(
+      "SELECT * FROM registrations WHERE student_id=? AND batch_id=?",
+      [student_id, batch_id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({
+        error: "Student already registered for this batch"
+      });
+    }
+
+    // ==========================
+    // 2️⃣ Get batch fee
+    // ==========================
     const [batchRows] = await pool.query(
-      "SELECT fee FROM batches WHERE id = ?",
+      "SELECT fee FROM batches WHERE id=?",
       [batch_id]
     );
 
     if (batchRows.length === 0) {
-      return res.status(400).json({ error: "Invalid batch" });
+      return res.status(400).json({
+        error: "Invalid batch"
+      });
     }
 
     const originalFee = Number(batchRows[0].fee);
     let discountAmount = 0;
 
-    // Apply discount
-    if (discount_id) {
+    // ==========================
+    // 3️⃣ Apply Discount
+    // ==========================
+    const discountId = discount_id ? Number(discount_id) : null;
+
+    if (discountId) {
+
       const [discountRows] = await pool.query(
         `SELECT * FROM discounts 
-         WHERE id = ? 
-         AND is_active = 1
+         WHERE id=? 
+         AND is_active=1
          AND start_date <= CURDATE()
          AND (end_date IS NULL OR end_date >= CURDATE())`,
-        [discount_id]
+        [discountId]
       );
 
       if (discountRows.length > 0) {
+
         const discount = discountRows[0];
 
         if (Number(discount.is_percentage) === 1) {
@@ -208,21 +239,28 @@ router.post("/", async (req, res) => {
           discountAmount = Number(discount.value);
         }
 
+        // safety check
         if (discountAmount > originalFee) {
           discountAmount = originalFee;
         }
       }
     }
 
+    // ==========================
+    // 4️⃣ Calculate final fee
+    // ==========================
     const finalAmount = originalFee - discountAmount;
 
-    // Generate registration code
-    const registrationCode =
-      "REG-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+    // ==========================
+    // 5️⃣ Generate code
+    // ==========================
+    const registrationCode = generateRegistrationCode();
 
-    // Insert into DB
+    // ==========================
+    // 6️⃣ Insert Registration
+    // ==========================
     await pool.query(
-      `INSERT INTO registrations 
+      `INSERT INTO registrations
       (registration_code, student_id, batch_id, original_fee, discount_amount, final_amount, status)
       VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')`,
       [
@@ -237,14 +275,100 @@ router.post("/", async (req, res) => {
 
     res.json({
       message: "Registration Successful",
-      registration_code: registrationCode
+      registration_code: registrationCode,
+      original_fee: originalFee,
+      discount_amount: discountAmount,
+      final_amount: finalAmount
     });
 
   } catch (error) {
+
     console.error("Register Error:", error);
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: "Server error"
+    });
+
   }
 });
+// router.post("/", async (req, res) => {
+//   try {
+//     const { student_id, batch_id, discount_id } = req.body;
+
+//     if (!student_id || !batch_id) {
+//       return res.status(400).json({ error: "Student & Batch required" });
+//     }
+
+//     // Get batch fee
+//     const [batchRows] = await pool.query(
+//       "SELECT fee FROM batches WHERE id = ?",
+//       [batch_id]
+//     );
+
+//     if (batchRows.length === 0) {
+//       return res.status(400).json({ error: "Invalid batch" });
+//     }
+
+//     const originalFee = Number(batchRows[0].fee);
+//     let discountAmount = 0;
+
+//     // Apply discount
+//     if (discount_id) {
+//       const [discountRows] = await pool.query(
+//         `SELECT * FROM discounts 
+//          WHERE id = ? 
+//          AND is_active = 1
+//          AND start_date <= CURDATE()
+//          AND (end_date IS NULL OR end_date >= CURDATE())`,
+//         [discount_id]
+//       );
+
+//       if (discountRows.length > 0) {
+//         const discount = discountRows[0];
+
+//         if (Number(discount.is_percentage) === 1) {
+//           discountAmount = (originalFee * Number(discount.value)) / 100;
+//         } else {
+//           discountAmount = Number(discount.value);
+//         }
+
+//         if (discountAmount > originalFee) {
+//           discountAmount = originalFee;
+//         }
+//       }
+//     }
+
+//     const finalAmount = originalFee - discountAmount;
+
+//     // Generate registration code
+//     const registrationCode =
+//       "REG-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+
+//     // Insert into DB
+//     await pool.query(
+//       `INSERT INTO registrations 
+//       (registration_code, student_id, batch_id, original_fee, discount_amount, final_amount, status)
+//       VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')`,
+//       [
+//         registrationCode,
+//         student_id,
+//         batch_id,
+//         originalFee,
+//         discountAmount,
+//         finalAmount
+//       ]
+//     );
+
+//     res.json({
+//       message: "Registration Successful",
+//       registration_code: registrationCode
+//     });
+
+//   } catch (error) {
+//     console.error("Register Error:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 router.get("/student-discount", async (req, res) => {
   try {

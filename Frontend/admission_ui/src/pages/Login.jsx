@@ -128,6 +128,8 @@ const Login = () => {
       localStorage.setItem("role", user.role);
       localStorage.setItem("name", user.name);
 
+      localStorage.setItem("student_id", user.id);
+
       if (user.role === "ADMIN") {
         navigate("/admin");
       } else {

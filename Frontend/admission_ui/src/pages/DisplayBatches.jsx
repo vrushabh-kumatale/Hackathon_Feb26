@@ -121,7 +121,7 @@ const DisplayBatches = () => {
           <tr>
             <th>ID</th>
             <th>Course</th>
-            <th>Batch Name</th>
+            {/* <th>Batch Name</th> */}
             <th>Fee</th>
             <th>Capacity</th>
             <th>Mode</th>
@@ -135,7 +135,7 @@ const DisplayBatches = () => {
             <tr key={batch.id}>
               <td>{batch.id}</td>
               <td>{batch.course_name}</td>
-              <td>{batch.batch_name}</td>
+              {/* <td>{batch.batch_name}</td> */}
               <td>{batch.fee}</td>
               <td>{batch.capacity}</td>
               <td>{batch.location_mode}</td>
