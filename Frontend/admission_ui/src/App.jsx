@@ -1,33 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+
+// import { Route, Routes } from 'react-router-dom'
+// import AddCourse from './pages/addCourse'
+// import AddBatch from './pages/AddBatches'
+// import DisplayBatches from './pages/DisplayBatches'
+// import RegisterStudent from './pages/StudentRegister'
+// import RegistrationForm from './pages/RegToCourse'
+// import DiscountManager from './pages/Discounts'
+
+// import AdminDashboard from './pages/AdminDashboard'
+// import Login from './pages/Login'
+// import StudentDashboard from './pages/StudentDashboard'
+// import AssignDiscountToBatch from './pages/AssignDiscountToBatch'
+// import RegistrationsList from './pages/RegistrationsList'
+
+
+// function App() {
+  
+
+//   return (
+//     <Routes>
+//            <Route path="/" element={<DisplayBatches />} />
+//             <Route path="/admin" element={<AdminDashboard />} />
+//             <Route path="/addCourse" element={<AddCourse/>}/>
+//             <Route path="/addBatches" element={<AddBatch/>}/>
+//             <Route path="/registerStudent/:id" element={<RegisterStudent/>}/>
+//             <Route path="/registerStudent" element={<RegistrationForm />} />
+//            <Route path="/discount" element={<DiscountManager/>}/>
+//            <Route path="/studentLogin" element={<Login />} />
+//            <Route path="/studentDashboard" element={<StudentDashboard />} />
+//            <Route path="/assignDiscount" element={<AssignDiscountToBatch />} />
+//            <Route path="/regList" element={<RegistrationsList />} />
+
+           
+//     </Routes>
+//   )
+// }
+
+// export default App
+
+import { Route, Routes, useLocation } from 'react-router-dom'
+
+import AddCourse from './pages/addCourse'
+import AddBatch from './pages/AddBatches'
+import DisplayBatches from './pages/DisplayBatches'
+import RegisterStudent from './pages/StudentRegister'
+import RegistrationForm from './pages/RegToCourse'
+import DiscountManager from './pages/Discounts'
+
+import AdminDashboard from './pages/AdminDashboard'
+import Login from './pages/Login'
+import StudentDashboard from './pages/StudentDashboard'
+import AssignDiscountToBatch from './pages/AssignDiscountToBatch'
+import RegistrationsList from './pages/RegistrationsList'
+import AdminLogin from './pages/AdminLogin'
+
+import Navbar from './pages/Navbar'
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const token = localStorage.getItem("token");
+   const location = useLocation();
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+       {token && location.pathname !== "/studentLogin" && <Navbar />}
+
+      <Routes>
+
+        <Route path="/" element={<DisplayBatches />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/addCourse" element={<AddCourse />} />
+        <Route path="/addBatches" element={<AddBatch />} />
+
+        <Route path="/registerStudent/:id" element={<RegisterStudent />} />
+        <Route path="/registerStudent" element={<RegistrationForm />} />
+
+        <Route path="/discount" element={<DiscountManager />} />
+        <Route path="/studentLogin" element={<Login />} />
+        <Route path="/studentDashboard" element={<StudentDashboard />} />
+        <Route path="/assignDiscount" element={<AssignDiscountToBatch />} />
+        <Route path="/regList" element={<RegistrationsList />} />
+        <Route path="/adminLogin" element={<AdminLogin />} />
+
+      </Routes>
     </>
   )
 }
